@@ -13,6 +13,8 @@
 //
 
 
+import 'package:math_expressions/math_expressions.dart';
+
 import 'package:flutter/material.dart';
 void main() {
   runApp(myApp());
@@ -38,9 +40,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black26,
-      appBar: AppBar(
-        title: Text('Calculator'),
-      ),
+
       body: Container(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.end,
@@ -49,10 +49,10 @@ class _HomePageState extends State<HomePage> {
 
               child: Container(
                 color: Colors.black38,
-                padding: EdgeInsets.all(10.0),
+                padding: EdgeInsets.all(12.0),
                 alignment: Alignment.bottomRight,
                 child: Text(
-                  text!,
+                 hideInput ?"":input ,
                   style: TextStyle(
                       fontSize: 60.0,
                       fontWeight: FontWeight.w500,
@@ -60,96 +60,173 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ),
-            Divider(color: Colors.deepOrange,),
+            Expanded(
+
+              child: Container(
+                color: Colors.black38,
+                padding: EdgeInsets.all(10.0),
+                alignment: Alignment.bottomRight,
+                child: Text(
+                  output,
+                  style: TextStyle(
+                      fontSize: outputSize,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.deepOrange),
+                ),
+              ),
+            ),
+            //Divider(color: Colors.deepOrange,),
             Row(
               children: <Widget>[
-                customOutlineButton("9"),
-                customOutlineButton("8"),
-                customOutlineButton("7"),
-                customOutlineButton("+"),
+                customOutlineButton(value: "AC",textColor: Color(0xffD9802E)),
+                customOutlineButton(value: "<",textColor: Color(0xffD9802E)),
+                // customOutlineButton(""),
+                customOutlineButton(value: "/",),
               ],
             ),
             Row(
               children: <Widget>[
-                customOutlineButton("6"),
-                customOutlineButton("5"),
-                customOutlineButton("4"),
-                customOutlineButton("-"),
+                customOutlineButton(value: "9"),
+                customOutlineButton(value: "8"),
+                customOutlineButton(value: "7"),
+                customOutlineButton(value: "x"),
               ],
             ),
             Row(
               children: <Widget>[
-                customOutlineButton("3"),
-                customOutlineButton("2"),
-                customOutlineButton("1"),
-                customOutlineButton("x"),
+                customOutlineButton(value: "6"),
+                customOutlineButton(value: "5"),
+                customOutlineButton(value: "4"),
+                customOutlineButton(value: "-"),
               ],
             ),
             Row(
               children: <Widget>[
-                customOutlineButton("C"),
-                customOutlineButton("0"),
-                customOutlineButton("="),
-                customOutlineButton("/"),
+                customOutlineButton(value: "3"),
+                customOutlineButton(value: "2"),
+                customOutlineButton(value: "1"),
+                customOutlineButton(value: "+"),
               ],
             ),
+            Row(
+              children: <Widget>[
+                customOutlineButton(value: "%",textColor: Color(0xffD9802E)),
+                customOutlineButton(value: "0"),
+                customOutlineButton(value: "."),
+                customOutlineButton(value: "=",background: Color(0xffD9802E)),
+              ],
+            ),
+            SizedBox(height: 22,)
           ],
         ),
       ),
     );
   }
-  Widget customOutlineButton(String val) {
+   static const Color colort=Color(0xff191919);
+  Widget customOutlineButton({ value,background:colort,textColor: Colors.white,}) {
     return Expanded(
-        child: OutlinedButton(
-            style: OutlinedButton.styleFrom(
-              side: BorderSide(
-                color: Colors.black26,
-              ),
+child:Container(
+  padding: EdgeInsets.all(8),
+        child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor:background,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+
+
             ),
-            onPressed: () => btnClicked(val),
+            onPressed: () {
+              setState(() {
+                input;
+
+              });
+              onbtnClick(value);
+            },
             child: Padding(
-              padding: EdgeInsets.all(25),
+              padding: EdgeInsets.all(22),
               child: Text(
-                "$val",
-                style: TextStyle(color: Colors.deepOrange, fontSize: 35),
+                "$value",
+                style: TextStyle(color: textColor, fontSize: 18,fontWeight: FontWeight.bold),
               ),
-            )));
+            ))));
   }
-  int first=0, second=0;
-  String ?res, text = "";
-  String ?opp;
-  void btnClicked(String btnText) {
-    if (btnText == "C") {
-      res = "";
-      text = "";
-      first = 0;
-      second = 0;
-    } else if (btnText == "+" ||
-        btnText == "-" ||
-        btnText == "x" ||
-        btnText == "/") {
-      first = int.parse(text!);
-      res = "";
-      opp = btnText;
-    } else if (btnText == "=") {
-      second = int.parse(text!);
-      if (opp == "+") {
-        res = (first + second).toString();
+  // int first=0, second=0;
+  // String ?res, text = "";
+  // String ?opp;
+  // String aboveText="";
+  var input="";
+  var output="";
+  var operation="";
+  var hideInput=false;
+  var outputSize=34.0;
+onbtnClick(value){
+  if(value=='AC'){
+    input="";
+    output="";
+  }
+  else if(value=='<'){
+    if(input.isNotEmpty)
+    input=input.substring(0,input.length-1);
+  }
+  else if(value=='=') {
+    if (input.isNotEmpty) {
+      var userInput = input;
+      userInput = input.replaceAll('x', '*');
+      Parser p = Parser();
+      Expression expression = p.parse(userInput);
+      ContextModel cm = ContextModel();
+      var finalValue = expression.evaluate(EvaluationType.REAL, cm).toString();
+      output = finalValue.toString();
+      if(output.endsWith('.0')) {
+        output = output.substring(0, output.length - 2);
       }
-      if (opp == "-") {
-        res = (first - second).toString();
-      }
-      if (opp == "x") {
-        res = (first * second).toString();
-      }
-      if (opp == "/") {
-        res = (first ~/ second).toString();
-      }
-    } else {
-      res = int.parse(text! + btnText).toString();
+      input=output;
+      hideInput=true;
+      outputSize=80;
     }
+  }
+    else{
+      input=input+value;
+      hideInput=false;
+      outputSize=60;
+  }
     setState(() {
-      text = res;
+
     });
   }
 }
+  // void btnClicked(String btnText) {
+  //
+  //   if (btnText == "C") {
+  //     res = "";
+  //     text = "";
+  //     first = 0;
+  //     second = 0;
+  //     aboveText="";
+  //   } else if (btnText == "+" ||
+  //       btnText == "-" ||
+  //       btnText == "x" ||
+  //       btnText == "/") {
+  //     first = int.parse(text!);
+  //     res = "";
+  //     opp = btnText;
+  //   } else if (btnText == "=") {
+  //     second = int.parse(text!);
+  //     if (opp == "+") {
+  //       res = (first + second).toString();
+  //     }
+  //     if (opp == "-") {
+  //       res = (first - second).toString();
+  //     }
+  //     if (opp == "x") {
+  //       res = (first * second).toString();
+  //     }
+  //     if (opp == "/") {
+  //       res = (first ~/ second).toString();
+  //     }
+  //   } else {
+  //     res = int.parse(text! + btnText).toString();
+  //   }
+  //   setState(() {
+  //     text = res;
+  //   });
+  // }
